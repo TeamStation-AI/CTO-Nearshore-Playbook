@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TeamStation AI | Axiom Cortex™ — Technical Methodology</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b1220" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #161b22; color: #e6e9f0; font-family: sans-serif; }
+    header, footer { background: #0d1117; }
+    nav a.active, nav a:hover { color: #7bb3ff; }
+    main { max-width: 900px; margin: 0 auto; padding: 90px 16px 48px; }
+    .toc { margin-bottom: 2em; }
+    .toc a { display: inline-block; margin-right: 1.5em; margin-bottom: 0.5em; color: #a6adbb; text-decoration: none; font-weight: 500; }
+    .toc a.active, .toc a:hover { color: #7bb3ff; }
+    article { background: #0d1117; border-radius: 16px; padding: 2em; }
+    pre { background: #0a162d; border-radius: 10px; padding: 1em; overflow-x: auto; }
+    code { background: #212c3b; border-radius: 4px; padding: 0.2em 0.4em; }
+    blockquote { border-left: 4px solid #7bb3ff; background: #202737; padding: 1em; border-radius: 0 12px 12px 0; margin: 1.5em 0; color: #a6adbb;}
+    h1, h2, h3 { margin-top: 1.5em; font-weight: bold;}
+    h1 { font-size: 2em; }
+    h2 { font-size: 1.4em; }
+    h3 { font-size: 1.1em; }
+    ul { list-style: disc inside; margin: 1em 0; }
+  </style>
+</head>
+<body>
+  <header class="fixed top-0 left-0 w-full border-b border-white/10 z-10">
+    <div class="max-w-4xl mx-auto flex items-center justify-between px-4 py-4">
+      <a href="#README.md" class="text-base font-semibold tracking-wide text-white hover:text-[--accent]">
+        TeamStation AI | Axiom Cortex™
+      </a>
+      <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1JD2e4SmSzEC82NiTvzvUJNaghMafqlUdoTB9YlWfUSsJa2fC4uqoXGoOb9XNhRIsNa-IOIXSq" target="_blank"
+         class="rounded-full bg-[#7bb3ff] px-3 py-2 text-xs font-semibold text-black hover:brightness-110">
+         Schedule Demo
+      </a>
+    </div>
+  </header>
+  <main>
+    <nav class="toc" id="toc"></nav>
+    <article id="content">Loading…</article>
+  </main>
+  <footer class="border-t border-white/10 py-6 text-center text-[--muted]">
+    <div id="footer">
+      © 2025 TeamStation AI. Axiom Cortex™ Technical Methodology.<br>
+      <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1JD2e4SmSzEC82NiTvzvUJNaghMafqlUdoTB9YlWfUSsJa2fC4uqoXGoOb9XNhRIsNa-IOIXSq"
+         class="text-[#7bb3ff] hover:brightness-110" target="_blank">Schedule a Technical Demo →</a>
+    </div>
+  </footer>
+  <script>
+    // List of shown markdown files:
+    const docs = [
+      { file: "README.md", title: "Overview" },
+      { file: "architecture.md", title: "Architecture" },
+      { file: "deliverables.md", title: "Deliverables" },
+      { file: "risk-and-reliability.md", title: "Risk & Reliability" },
+      { file: "scientific-foundations.md", title: "Scientific Foundations" }
+    ];
+
+    function setActiveNav(hash) {
+      document.querySelectorAll('.toc a').forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === hash);
+      });
+    }
+
+    function mdToHtml(md) {
+      // very basic Markdown rendering, enough for your docs
+      md = md.replace(/^# (.+)$/gm, "<h1>$1</h1>")
+             .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+             .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+             .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+             .replace(/```([^`\n]*)\n([\s\S]+?)```/g, '<pre><code>$2</code></pre>')
+             .replace(/`([^`]+)`/g, '<code>$1</code>')
+             .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+             .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+             .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+             .replace(/\n\n+/g, "</p><p>")
+             .replace(/<p>/g, '<p class="my-3 leading-relaxed">');
+      return "<p>" + md + "</p>";
+    }
+
+    async function loadDoc(file) {
+      setActiveNav(`#${file}`);
+      document.getElementById('content').textContent = 'Loading…';
+      try {
+        const res = await fetch(file + '?ts=' + Date.now());
+        if (!res.ok) throw new Error('Not found');
+        const md = await res.text();
+        document.getElementById('content').innerHTML = mdToHtml(md);
+      } catch (e) {
+        document.getElementById('content').innerHTML = `<h1>404 — Not found</h1>
+          <p class="text-[--muted]">Could not load <code>${file}</code>.</p>
+          <p><a href="#README.md" class="text-[#7bb3ff]">Go to Overview</a></p>`;
+      }
+    }
+
+    function buildNav() {
+      const toc = document.getElementById('toc');
+      toc.innerHTML = docs.map(d =>
+        `<a href="#${d.file}"${location.hash === '#' + d.file ? ' class="active"' : ''}>${d.title}</a>`
+      ).join("");
+    }
+
+    window.addEventListener('hashchange', () => {
+      const hash = location.hash || '#README.md';
+      const doc = docs.find(d => '#' + d.file === hash);
+      if (doc) loadDoc(doc.file);
+      setActiveNav(hash);
+    });
+
+    // Initial build and load
+    buildNav();
+    if (!location.hash || !docs.some(d => '#' + d.file === location.hash)) location.hash = '#README.md';
+    loadDoc(location.hash.slice(1));
+
+  </script>
+</body>
+</html>
